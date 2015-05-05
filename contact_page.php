@@ -19,18 +19,18 @@
 	    <div class="title-pg"><h2>Google map</h2></div>
         <label>Location</label>
         <?php 
-            $location_opt = get_option('location'); 
-	        print_r($location_opt);
+            $location_opt = get_option('location');
         ?>
     </div>
     <div id="map-canvas"></div>
     <div id="panel">
-      <input id="address" type="text" name="location[address]" value="<?php echo esc_attr($location_opt['address']); ?>" class="form-control">
+      <input id="address" type="text" name="location[address]" value="<?php echo esc_attr($location_opt['address']); ?>" class="form-control" onkeyup="codeAddress();">
         
       <?php // Add Latitude and Longitide Form Fields. These will be saved to the $location array. ?>
       <input id="address_lat" type="hidden" name="location[lat]" value="<?php echo esc_attr($location_opt['lat']); ?>">
       <input id="address_lng" type="hidden" name="location[lng]" value="<?php echo esc_attr($location_opt['lng']); ?>">
-      <input type="button" value="Geocode" onclick="codeAddress()" class="button-primary">
+      <input id="address_zoom" type="hidden" name="location[zoom]" value="<?php echo esc_attr($location_opt['zoom']); ?>">
+     <!-- <input type="button" value="Geocode" onclick="codeAddress()" class="button-primary">-->
     </div>
     <input type="submit" name="submit" id="submit" class="button button-primary save-button" value="Save Changes"  />
  </form>
@@ -77,10 +77,12 @@ register_setting( 'my-plugin-settings-group', 'location');
         define('location_address', $location['address']);
         define('location_lat', $location['lat']);
         define('location_lng', $location['lng']);
+        define('location_zoom', $location['zoom']);
     } else {
 	    define('location_address', 'location here');
         define('location_lat', 0);
-        defind('location_lng', 0);
+        define('location_lng', 0);
+        define('location_zoom', 8);
    }
    
    /** DEFINE ALL DATA END **/
@@ -93,12 +95,26 @@ var geocoder;
 var map;
 function initialize() {
   geocoder = new google.maps.Geocoder();
-  var latlng = new google.maps.LatLng(-34.397, 150.644);
+  var latlng = new google.maps.LatLng(<?php echo location_lat.', '.location_lng; ?>);
   var mapOptions = {
-    zoom: 8,
+    zoom: <?php echo location_zoom; ?>,
     center: latlng
   }
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+    
+ <?php if(location_lat){
+        echo 'var marker = new google.maps.Marker({
+          map: map,
+          position: latlng
+      });'; 
+   }?>
+    
+    google.maps.event.addListener(map, 'zoom_changed', function(){
+   
+    document.getElementById("address_zoom").value = map.getZoom();
+    
+});
+
 }
 
 function codeAddress() {
@@ -117,11 +133,10 @@ function codeAddress() {
           position: results[0].geometry.location
       });
     } else {
-      alert('Geocode was not successful for the following reason: ' + status);
+      console.log('Geocode was not successful for the following reason: ' + status);
     }
   });
 }
-
 
 
 google.maps.event.addDomListener(window, 'load', initialize);

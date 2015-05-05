@@ -3,11 +3,77 @@
 <form method="post" action="options.php">
  <?php settings_fields( 'social-settings-fam' ); ?>
  <?php do_settings_sections( 'social-settings-fam' ); ?>
- 		<div class="form-group">
-    	    <span class="dashicons dashicons-twitter"></span><label>Twitter</label>
-    	    <input type="url" name="social_tweet" id="social_tweet" placeholder="https://twitter.com" class="form-control" value="<?php echo esc_attr( get_option('social_tweet') ); ?>" data-bv-notempty />
-    	</div>
-    	<div class="form-group">
+    
+<?php
+    $socialmedia = get_option('socialmedia');
+    $smi = 0;
+    echo '<div class="social-group">';
+    if($socialmedia){
+        foreach($socialmedia as $sm){
+         echo   '<div class="form-group sm-group">
+                <span class="dashicons dashicons-'.$sm['site'].'"></span>
+                <select name="socialmedia['.$smi.'][site]">
+
+                    <option value="">Select One</option>
+                    <option value="twitter" '.($sm['site']=="twitter" ? "selected='selected'" : "").'>Twitter</option>
+                    <option value="facebook" '.($sm['site']=="facebook" ? "selected='selected'" : "").'>Facebook</option>
+                    <option value="instagram" '.($sm['site']=="instagram" ? "selected='selected'" : "").'>Instagram</option>
+                    <option value="linked-in" '.($sm['site']=="linked-in" ? "selected='selected'": "").'>LinkedIn</option>
+
+                </select>
+                <input type="url" name="socialmedia['.$smi.'][url]" class="form-control" value="'.$sm['url'].'" data-bv-notempty />
+            </div>';
+        }
+    }else{
+        
+        echo '<div class="form-group sm-group">
+                <span class="dashicons dashicons-smiley"></span>
+                <select name="socialmedia['.$smi.'][site]">
+
+                    <option value="">Select One</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="linked-in">LinkedIn</option>
+
+                </select>
+                <input type="url" name="socialmedia['.$smi.'][url]" class="form-control" value="" data-bv-notempty />
+            </div>';
+            
+            
+    }
+                                   echo '</div>';
+ 		?>
+    
+    <button class="add_social">Add more!</button>
+    
+    <script type="text/javascript">
+        jQuery(function($){
+           
+            var smi = <?php echo $smi; ?>;
+            
+            $(".add_social").click(function(){
+                smi++;
+                var fieldset = '<div class="form-group sm-group">'+
+                                '<span class="dashicons dashicons-smiley"></span>'+
+                                '<select name="socialmedia['+smi+'][site]">'+
+                                    '<option value="">Select One</option>'+
+                                    '<option value="twitter">Twitter</option>'+
+                                    '<option value="facebook">Facebook</option>'+
+                                    '<option value="instagram">Instagram</option>'+
+                                    '<option value="linked-in">LinkedIn</option>'+
+                                '</select>'+
+                                '<input type="url" name="socialmedia['+smi+'][url]" class="form-control" value="" data-bv-notempty /></div>';
+                
+                $(".social-group").append(fieldset);
+                
+                return false;
+                
+            });
+            
+        });
+    </script>
+    <!--<div class="form-group">
     	    <span class="dashicons dashicons-facebook-alt"></span><label>Facebook</label>
     	    <input type="url" name="social_fb" id="social_fb" placeholder="https://www.facebook.com" class="form-control" value="<?php echo esc_attr( get_option('social_fb') ); ?>" data-bv-notempty />
     	</div>
@@ -18,7 +84,7 @@
     	<div class="form-group">
     	    <span class="dashicons dashicons-share-alt2"></span><label>Youtube</label>
     	    <input type="url" name="social_youtube" id="social_youtube" placeholder="https://www.youtube.com" class="form-control" value="<?php echo esc_attr( get_option('social_youtube') ); ?>" data-bv-notempty />
-    	</div>
+    	</div>-->
     	<input type="submit" name="submit" id="submit" class="button button-primary save-button" value="Save Changes"  />
  </form>
  
@@ -30,6 +96,7 @@
 add_action( 'admin_init', 'social_settings' );
 
 function social_settings() {
+    register_setting('social-settings-fam', 'socialmedia');
 register_setting( 'social-settings-fam', 'social_tweet' );
 register_setting( 'social-settings-fam', 'social_fb' );
 register_setting( 'social-settings-fam', 'social_linkedin' );
